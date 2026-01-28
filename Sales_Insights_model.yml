@@ -1,0 +1,249 @@
+name: Sales_Customer_Insights
+tables:
+  - name: CUSTOMER
+    base_table:
+      database: SF_INTEL_POC_DB
+      schema: RAW
+      table: CUSTOMER
+    dimensions:
+      - name: BIRTH_YEAR
+        expr: C_BIRTH_YEAR
+        data_type: NUMBER(38,0)
+      - name: C_CUSTOMER_SK
+        expr: C_CUSTOMER_SK
+        data_type: NUMBER(38,0)
+      - name: CURRENT_ADDR_SK
+        expr: C_CURRENT_ADDR_SK
+        data_type: NUMBER(38,0)
+      - name: CURRENT_CDEMO_SK
+        expr: C_CURRENT_CDEMO_SK
+        data_type: NUMBER(38,0)
+      - name: CUSTOMER_ID
+        description: Business identifier for the customer
+        expr: C_CUSTOMER_ID
+        data_type: VARCHAR(16)
+      - name: FIRST_NAME
+        expr: C_FIRST_NAME
+        data_type: VARCHAR(20)
+      - name: LAST_NAME
+        expr: C_LAST_NAME
+        data_type: VARCHAR(30)
+      - name: PREFERRED_CUSTOMER_FLAG
+        expr: C_PREFERRED_CUST_FLAG
+        data_type: VARCHAR(1)
+    primary_key:
+      columns:
+        - C_CUSTOMER_SK
+  - name: CUSTOMER_DEMOGRAPHICS
+    base_table:
+      database: SF_INTEL_POC_DB
+      schema: RAW
+      table: CUSTOMER_DEMOGRAPHICS
+    dimensions:
+      - name: CD_DEMO_SK
+        expr: CD_DEMO_SK
+        data_type: NUMBER(38,0)
+      - name: CREDIT_RATING
+        expr: CD_CREDIT_RATING
+        data_type: VARCHAR(10)
+      - name: DEPENDENT_COUNT
+        expr: CD_DEP_COUNT
+        data_type: NUMBER(38,0)
+      - name: EDUCATION_STATUS
+        expr: CD_EDUCATION_STATUS
+        data_type: VARCHAR(20)
+      - name: GENDER
+        expr: CD_GENDER
+        data_type: VARCHAR(1)
+      - name: MARITAL_STATUS
+        expr: CD_MARITAL_STATUS
+        data_type: VARCHAR(1)
+    primary_key:
+      columns:
+        - CD_DEMO_SK
+  - name: CUSTOMER_ADDRESS
+    base_table:
+      database: SF_INTEL_POC_DB
+      schema: RAW
+      table: CUSTOMER_ADDRESS
+    dimensions:
+      - name: CA_ADDRESS_SK
+        expr: CA_ADDRESS_SK
+        data_type: NUMBER(38,0)
+      - name: CITY
+        expr: CA_CITY
+        data_type: VARCHAR(60)
+      - name: COUNTRY
+        expr: CA_COUNTRY
+        data_type: VARCHAR(20)
+      - name: LOCATION_TYPE
+        expr: CA_LOCATION_TYPE
+        data_type: VARCHAR(20)
+      - name: STATE
+        expr: CA_STATE
+        data_type: VARCHAR(2)
+      - name: ZIP
+        expr: CA_ZIP
+        data_type: VARCHAR(10)
+    primary_key:
+      columns:
+        - CA_ADDRESS_SK
+  - name: ITEM
+    base_table:
+      database: SF_INTEL_POC_DB
+      schema: RAW
+      table: ITEM
+    dimensions:
+      - name: BRAND
+        expr: I_BRAND
+        data_type: VARCHAR(50)
+      - name: CATEGORY
+        expr: I_CATEGORY
+        data_type: VARCHAR(50)
+      - name: CLASS
+        expr: I_CLASS
+        data_type: VARCHAR(50)
+      - name: I_ITEM_SK
+        expr: I_ITEM_SK
+        data_type: NUMBER(38,0)
+      - name: ITEM_ID
+        expr: I_ITEM_ID
+        data_type: VARCHAR(16)
+      - name: PRODUCT_NAME
+        expr: I_PRODUCT_NAME
+        data_type: VARCHAR(50)
+    facts:
+      - name: CURRENT_PRICE
+        expr: I_CURRENT_PRICE
+        data_type: NUMBER(7,2)
+    primary_key:
+      columns:
+        - I_ITEM_SK
+  - name: SALES
+    base_table:
+      database: SF_INTEL_POC_DB
+      schema: RAW
+      table: SALES
+    dimensions:
+      - name: BILL_ADDR_SK
+        expr: CS_BILL_ADDR_SK
+        data_type: NUMBER(38,0)
+      - name: BILL_CDEMO_SK
+        expr: CS_BILL_CDEMO_SK
+        data_type: NUMBER(38,0)
+      - name: BILL_CUSTOMER_SK
+        expr: CS_BILL_CUSTOMER_SK
+        data_type: NUMBER(38,0)
+      - name: ITEM_SK
+        expr: CS_ITEM_SK
+        data_type: NUMBER(38,0)
+      - name: ORDER_NUMBER
+        expr: CS_ORDER_NUMBER
+        data_type: NUMBER(38,0)
+    facts:
+      - name: NET_PAID
+        expr: CS_NET_PAID
+        data_type: NUMBER(7,2)
+      - name: NET_PROFIT
+        expr: CS_NET_PROFIT
+        data_type: NUMBER(7,2)
+      - name: QUANTITY_SOLD
+        expr: CS_QUANTITY
+        data_type: NUMBER(38,0)
+      - name: SALES_AMOUNT
+        expr: CS_EXT_SALES_PRICE
+        data_type: NUMBER(7,2)
+relationships:
+  - name: SALES_TO_CUSTOMER
+    left_table: SALES
+    right_table: CUSTOMER
+    relationship_columns:
+      - left_column: BILL_CUSTOMER_SK
+        right_column: C_CUSTOMER_SK
+    relationship_type: many_to_one
+    join_type: inner
+  - name: SALES_TO_ITEM
+    left_table: SALES
+    right_table: ITEM
+    relationship_columns:
+      - left_column: ITEM_SK
+        right_column: I_ITEM_SK
+    relationship_type: many_to_one
+    join_type: inner
+  - name: SALES_TO_DEMOGRAPHICS
+    left_table: SALES
+    right_table: CUSTOMER_DEMOGRAPHICS
+    relationship_columns:
+      - left_column: BILL_CDEMO_SK
+        right_column: CD_DEMO_SK
+    relationship_type: many_to_one
+    join_type: inner
+  - name: SALES_TO_ADDRESS
+    left_table: SALES
+    right_table: CUSTOMER_ADDRESS
+    relationship_columns:
+      - left_column: BILL_ADDR_SK
+        right_column: CA_ADDRESS_SK
+    relationship_type: many_to_one
+    join_type: inner
+  - name: CUSTOMER_TO_DEMOGRAPHICS
+    left_table: CUSTOMER
+    right_table: CUSTOMER_DEMOGRAPHICS
+    relationship_columns:
+      - left_column: CURRENT_CDEMO_SK
+        right_column: CD_DEMO_SK
+    relationship_type: many_to_one
+    join_type: inner
+  - name: CUSTOMER_TO_ADDRESS
+    left_table: CUSTOMER
+    right_table: CUSTOMER_ADDRESS
+    relationship_columns:
+      - left_column: CURRENT_ADDR_SK
+        right_column: CA_ADDRESS_SK
+    relationship_type: many_to_one
+    join_type: inner
+verified_queries:
+  - name: Show total sales amount and net profit by product category
+    question: Show total sales amount and net profit by product category
+    sql: |-
+      SELECT
+              i.I_CATEGORY AS category,
+              SUM(s.CS_EXT_SALES_PRICE) AS total_sales,
+              SUM(s.CS_NET_PROFIT) AS total_profit
+            FROM SF_INTEL_POC_DB.RAW.SALES s
+            JOIN SF_INTEL_POC_DB.RAW.ITEM i
+              ON s.CS_ITEM_SK = i.I_ITEM_SK
+            GROUP BY i.I_CATEGORY
+    use_as_onboarding_question: false
+    verified_by: Sahaja Kothakota
+    verified_at: 1769588411
+  - name: Show total sales and quantity sold by customer state
+    question: Show total sales and quantity sold by customer state
+    sql: |-
+      SELECT
+              a.CA_STATE AS state,
+              SUM(s.CS_EXT_SALES_PRICE) AS total_sales,
+              SUM(s.CS_QUANTITY) AS total_quantity
+            FROM SF_INTEL_POC_DB.RAW.SALES s
+            JOIN SF_INTEL_POC_DB.RAW.CUSTOMER_ADDRESS a
+              ON s.CS_BILL_ADDR_SK = a.CA_ADDRESS_SK
+            GROUP BY a.CA_STATE
+            ORDER BY total_sales DESC
+    use_as_onboarding_question: false
+    verified_by: Sahaja Kothakota
+    verified_at: 1769588439
+  - name: Show total sales by gender and marital status
+    question: Show total sales by gender and marital status
+    sql: |-
+      SELECT
+              d.CD_GENDER AS gender,
+              d.CD_MARITAL_STATUS AS marital_status,
+              SUM(s.CS_EXT_SALES_PRICE) AS total_sales
+            FROM SF_INTEL_POC_DB.RAW.SALES s
+            JOIN SF_INTEL_POC_DB.RAW.CUSTOMER_DEMOGRAPHICS d
+              ON s.CS_BILL_CDEMO_SK = d.CD_DEMO_SK
+            GROUP BY d.CD_GENDER, d.CD_MARITAL_STATUS
+            ORDER BY total_sales DESC
+    use_as_onboarding_question: false
+    verified_by: Sahaja Kothakota
+    verified_at: 1769588467
